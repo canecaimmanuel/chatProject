@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 import { db } from './firebase';
-import { collection, onSnapshot, addDoc } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, query, where, getDoc } from 'firebase/firestore';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCoffee } from "@fortawesome/free-solid-svg-icons";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
@@ -11,8 +11,7 @@ function App() {
 
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
-  const [username, setUsername] = useState("No Username set");
-  const [number, setNumber] = useState("No number set");
+  const [username, setUsername] = useState("");
 
   useEffect(() => {
     fetchData();
@@ -30,16 +29,27 @@ function App() {
     })
   }
 
+  const handleSearch = async () => {
+    const q = query(collection(db, "chat"),
+      where("displayName", "==", username)
+    );
+
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach((doc) => {
+      setUser(doc.data())
+    })
+  };
+
+  const handleKey = (e) => {
+    e.code === "Enter" && handleSearch();
+  };
+
   const handleChatChange = (e) => {
     setMessage(e.target.value);
   }
 
   const handleUsernameChange = (e) => {
     setUsername(e.target.value);
-  }
-
-  const handleNumberChange = (e) => {
-    setNumber(e.target.value);
   }
 
   const sendChat = async () => {
@@ -61,11 +71,11 @@ function App() {
             <input type="text" placeholder='Enter username...' className="bg-info-subtle form-control mt-5" onChange={handleUsernameChange} />
           </div>
         </div>
-        <div className="row">
+        {/* <div className="row">
           <div className="col-4">
             <input type="text" placeholder='Enter your number...' className="bg-info-subtle form-control mt-2" onChange={handleNumberChange} />
           </div>
-        </div>
+        </div> */}
       </div>
 
       <main className='container p-2 my-5 border bg-dark-subtle'>
@@ -75,7 +85,7 @@ function App() {
         <div className="row p-3 ">
           <div className="col-4 border">
             <div className="input-group col-12 my-2">
-              <button class="input-group-text" id="basic-addon1"><FontAwesomeIcon icon={faMagnifyingGlass} /></button>
+              {/* <button class="input-group-text" id="basic-addon1"><FontAwesomeIcon icon={faMagnifyingGlass} /></button> */}
               <input type="text" className="form-control bg-secondary-subtle" placeholder='Search..' />
             </div>
             <div className="container">
@@ -91,7 +101,7 @@ function App() {
                       <option value="2">Delete chat</option>
                       <option value="3">Mark as read</option>
                     </select>
-                    <label for="floatingSelect">{number}</label>
+                    <label for="floatingSelect">number</label>
                   </div>
                 </div>
               </div>
